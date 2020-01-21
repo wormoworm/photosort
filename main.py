@@ -7,9 +7,13 @@ import exifread
 import pprint
 import shutil
 from pathlib import Path
+import hashlib
+
+from hashutils import HashUtils
 
 DIRECTORY_INPUT = os.getenv('DIRECTORY_INPUT', '/photos/input')
 DIRECTORY_OUTPUT = os.getenv('DIRECTORY_OUTPUT', '/photos/output')
+DIRECTORY_QUARANTINE = os.getenv('DIRECTORY_QUARANTINE', '/photos/quarantine')
 
 supported_image_file_extensions = ['.jpg', '.jpeg']
 exif_tag_date_taken = 'EXIF DateTimeOriginal'
@@ -83,11 +87,22 @@ def process_file(input_path):
         print('Output path for this image will be: ' + image_output_path)
     file_exists = does_file_exist(image_output_path)
     if file_exists:
-        if debug():
-            print('File already exists, skipping...')
+        # Now we will do an extra check to see if we are really dealing with the same file, or whether it's just a file name clash
+        input_file_hash = HashUtils.get_file_hash(input_path)
+        existing_file_hash = HashUtils.get_file_hash(image_output_path)
+        if input_file_hash == existing_file_hash:
+            # The two files are identical, so we can be 100% certain that we can discard the input file
+            os.remove(input_path)
+            print('An identical image already exists for ' + file_name_full + ', skipping and removing input image...')
+        else:
+            # The two files are not identical, so we will move the input file to a 'quarantine' directory, where the user can resolve the conflict manually
+            quarantine_path = DIRECTORY_QUARANTINE + '/' + file_name_full
+            ensure_directory_exists(DIRECTORY_QUARANTINE)
+            shutil.move(input_path, quarantine_path)
+            print('An image named ' + file_name_full + 'already exists, but it\'s contents are not identical. The image has been moved to ' + quarantine_path + ' for quarantine')
         return None
     # Ensure the output directory exists before attempting to move the file
-    Path(image_output_dir).mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(image_output_dir)
     # Move the file
     shutil.move(input_path, image_output_path)
     print('Image ' + file_name_full + ' moved to: ' + image_output_path)
@@ -96,6 +111,9 @@ def process_file(input_path):
 def does_file_exist(path):
     return os.path.isfile(path)
 
+
+def ensure_directory_exists(path):
+    Path(path).mkdir(parents=True, exist_ok=True)
 
 # Checks if a file is an image or not
 def file_extension_is_image(file_extension):
@@ -121,8 +139,10 @@ def get_image_timestamp(path):
 def pretty_print_exif(tags):
     pprint.PrettyPrinter(indent=4).pprint(tags)
 
+
 def create_output_dir(year, month):
     return dir_output_base.format(year, month)
+
 
 if __name__ == '__main__':
     w = Watcher()
