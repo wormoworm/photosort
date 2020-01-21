@@ -5,11 +5,13 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import exifread
 import pprint
+import shutil
+from pathlib import Path
 
 supported_image_file_extensions = ['.jpg', '.jpeg']
 exif_tag_date_taken = 'EXIF DateTimeOriginal'
 exif_datetime_format = '%Y:%m:%d %H:%M:%S'
-dir_output_base = 'output/{0}/{1}/{2}'
+dir_output_base = 'output/{0}/{1}/'
 
 class Watcher:
     DIRECTORY_TO_WATCH = "test/"
@@ -35,58 +37,91 @@ class Handler(FileSystemEventHandler):
 
     @staticmethod
     def on_any_event(event):
+        if debug():
+            print('Received event in input directory: ' + event.event_type)
         if event.is_directory:
             return None
 
         elif event.event_type == 'created':
             process_file(event.src_path)
 
-        elif event.event_type == 'modified':
-            process_file(event.src_path)
+        # elif event.event_type == 'modified':
+            # process_file(event.src_path)
 
 
-def process_file(path):
-    print("File path - %s." % path)
+def debug():
+    return True
+
+
+def process_file(input_path):
+    # Check the file still exists. The file watcher seems to deliver multiple events per file change, and they seem to all arrive at the same time. So after we have moved the file during the first call to this function, the file will no longer exist.
+    if not does_file_exist(input_path):
+        return None
+    if debug():
+        print("File path: " + input_path)
     # Step 1: Extract the file name and extension from the path
-    file_name, file_extension = os.path.splitext((path))
+    path = Path(input_path)
+    file_name = path.stem
+    file_extension = path.suffix
     file_name_full = file_name + file_extension
-
+    if debug():
+        print('File: ' + file_name_full)
     # Step 2: Filter away files that are not images
-    print(file_extension_is_image(file_extension))
-    if not file_extension_is_image(file_extension):
+    file_is_image =  file_extension_is_image(file_extension)
+    if not file_is_image:
+        if debug():
+            print('File is not an image, skipping...')
         return None
     # Step 3: Extract EXIF date taken from the image
-    year, month = get_photo_timestamp(path)
-    print(year)
-    print(month)
+    year, month = get_image_timestamp(input_path)
     # Step 4: Move the file to the correct destination directory (skipping if it already exists)
-    photo_output_path = create_output_path(year, month, file_name_full)
-    print(photo_output_path)
+    image_output_dir = create_output_dir(year, month)
+    image_output_path = image_output_dir + file_name_full
+    if debug():
+        print('Output path for this image will be: ' + image_output_path)
+    file_exists = does_file_exist(image_output_path)
+    if file_exists:
+        if debug():
+            print('File already exists, skipping...')
+        return None
+    # Ensure the output directory exists before attempting to move the file
+    Path(image_output_dir).mkdir(parents=True, exist_ok=True)
+    # Move the file
+    shutil.move(input_path, image_output_path)
+    if debug():
+        print('Image moved to: ' + image_output_path)
 
-    # Step 5: Delete the source file
+
+def does_file_exist(path):
+    return os.path.isfile(path)
 
 
 # Checks if a file is an image or not
 def file_extension_is_image(file_extension):
-    print(file_extension)
+    if debug():
+        print('Checking file extension: ' + file_extension)
     return file_extension.lower() in supported_image_file_extensions
 
 
-def get_photo_timestamp(path):
+def get_image_timestamp(path):
     file = open(path, 'rb')
     tags = exifread.process_file(file, details=False, stop_tag=exif_tag_date_taken)
     # pp = pprint.PrettyPrinter(indent=4)
     # pp.pprint(tags)
     exif_datetime = tags.get(exif_tag_date_taken)
-    photo_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
-    # print(photo_date.year)
-    print('Photo time: %s' % exif_datetime)
+    image_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
+    # print(image_date.year)
+    if debug():
+        print('Image capture time: %s' % exif_datetime)
     # Return the year and month as a tuple. Values are not zero-padded at this stage
-    return photo_date.year, photo_date.month
+    return image_date.year, image_date.month
 
 
-def create_output_path(year, month, file_name):
-    return dir_output_base.format(year, month, file_name)
+def pretty_print_exif(tags):
+    pprint.PrettyPrinter(indent=4).pprint(tags)
+
+def create_output_dir(year, month):
+    return dir_output_base.format(year, month)
 
 if __name__ == '__main__':
     w = Watcher()
