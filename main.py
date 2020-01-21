@@ -8,27 +8,29 @@ import pprint
 import shutil
 from pathlib import Path
 
+DIRECTORY_INPUT = os.getenv('DIRECTORY_INPUT', '/photos/input')
+DIRECTORY_OUTPUT = os.getenv('DIRECTORY_OUTPUT', '/photos/output')
+
 supported_image_file_extensions = ['.jpg', '.jpeg']
 exif_tag_date_taken = 'EXIF DateTimeOriginal'
 exif_datetime_format = '%Y:%m:%d %H:%M:%S'
-dir_output_base = 'output/{0}/{1}/'
+dir_output_base = DIRECTORY_OUTPUT + '/{0}/{1}/'
 
 class Watcher:
-    DIRECTORY_TO_WATCH = "test/"
-
     def __init__(self):
         self.observer = Observer()
 
     def run(self):
         event_handler = Handler()
-        self.observer.schedule(event_handler, self.DIRECTORY_TO_WATCH)
+        self.observer.schedule(event_handler, DIRECTORY_INPUT)
         self.observer.start()
+        print('Watching ' + DIRECTORY_INPUT + ' for incoming images...')
         try:
             while True:
                 time.sleep(5)
         except:
             self.observer.stop()
-            print("Error")
+            print("Exiting...")
 
         self.observer.join()
 
@@ -88,8 +90,7 @@ def process_file(input_path):
     Path(image_output_dir).mkdir(parents=True, exist_ok=True)
     # Move the file
     shutil.move(input_path, image_output_path)
-    if debug():
-        print('Image moved to: ' + image_output_path)
+    print('Image ' + file_name_full + ' moved to: ' + image_output_path)
 
 
 def does_file_exist(path):
