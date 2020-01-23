@@ -11,5 +11,5 @@ class HashUtils:
             while len(fb) > 0:  # While there is still data being read from the file
                 file_hash.update(fb)  # Update the hash
                 fb = f.read(BLOCK_SIZE)  # Read the next block from the file
-        print(file_hash.hexdigest())  # Get the hexadecimal digest of the hash
+        # print(file_hash.hexdigest())  # Get the hexadecimal digest of the hash
         return file_hash.hexdigest()

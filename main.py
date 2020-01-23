@@ -18,7 +18,7 @@ DIRECTORY_QUARANTINE = os.getenv('DIRECTORY_QUARANTINE', '/photos/quarantine')
 supported_image_file_extensions = ['.jpg', '.jpeg']
 exif_tag_date_taken = 'EXIF DateTimeOriginal'
 exif_datetime_format = '%Y:%m:%d %H:%M:%S'
-dir_output_base = DIRECTORY_OUTPUT + '/{0}/{1}/'
+dir_output_base = DIRECTORY_OUTPUT + '/{0}/{1:02}/'
 
 class Watcher:
     def __init__(self):
@@ -56,7 +56,12 @@ class Handler(FileSystemEventHandler):
 
 
 def debug():
-    return True
+    return False
+
+
+def prcoess_existing_files():
+    for file in os.listdir(DIRECTORY_INPUT):
+        process_file(DIRECTORY_INPUT + '/' + file)
 
 
 def process_file(input_path):
@@ -115,6 +120,7 @@ def does_file_exist(path):
 def ensure_directory_exists(path):
     Path(path).mkdir(parents=True, exist_ok=True)
 
+
 # Checks if a file is an image or not
 def file_extension_is_image(file_extension):
     if debug():
@@ -145,5 +151,7 @@ def create_output_dir(year, month):
 
 
 if __name__ == '__main__':
+    # First, process any files in the input directory. This takes care of any files that may have been added whilst photowatch was not running
+    prcoess_existing_files()
     w = Watcher()
     w.run()
