@@ -60,6 +60,7 @@ def debug():
 
 
 def prcoess_existing_files():
+    print('Scanning for existing files in ' + DIRECTORY_INPUT)
     for file in os.listdir(DIRECTORY_INPUT):
         process_file(DIRECTORY_INPUT + '/' + file)
 
