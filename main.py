@@ -105,7 +105,7 @@ def process_file(input_path):
             quarantine_path = DIRECTORY_QUARANTINE + '/' + file_name_full
             ensure_directory_exists(DIRECTORY_QUARANTINE)
             shutil.move(input_path, quarantine_path)
-            print('An image named ' + file_name_full + 'already exists, but it\'s contents are not identical. The image has been moved to ' + quarantine_path + ' for quarantine')
+            print('An image named ' + file_name_full + ' already exists, but its contents are not identical. The image has been moved to ' + quarantine_path + ' for quarantine')
         return None
     # Ensure the output directory exists before attempting to move the file
     ensure_directory_exists(image_output_dir)
