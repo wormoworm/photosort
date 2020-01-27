@@ -104,13 +104,13 @@ def process_file(input_path):
             # The two files are not identical, so we will move the input file to a 'quarantine' directory, where the user can resolve the conflict manually
             quarantine_path = DIRECTORY_QUARANTINE + '/' + file_name_full
             ensure_directory_exists(DIRECTORY_QUARANTINE)
-            shutil.move(input_path, quarantine_path)
+            move_file(input, quarantine_path)
             print('An image named ' + file_name_full + ' already exists, but its contents are not identical. The image has been moved to ' + quarantine_path + ' for quarantine')
         return None
     # Ensure the output directory exists before attempting to move the file
     ensure_directory_exists(image_output_dir)
     # Move the file
-    shutil.move(input_path, image_output_path)
+    move_file(input_path, image_output_path)
     print('Image ' + file_name_full + ' moved to: ' + image_output_path)
 
 
@@ -127,6 +127,11 @@ def file_extension_is_image(file_extension):
     if debug():
         print('Checking file extension: ' + file_extension)
     return file_extension.lower() in supported_image_file_extensions
+
+
+def move_file(src_path, destination_path):
+    #shutil.move(input_path, quarantine_path)
+    os.rename(src_path, destination_path)
 
 
 def get_image_timestamp(path):
