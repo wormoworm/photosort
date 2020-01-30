@@ -131,7 +131,8 @@ def file_extension_is_image(file_extension):
 
 def move_file(src_path, destination_path):
     #shutil.move(input_path, quarantine_path)
-    os.rename(src_path, destination_path)
+    #os.rename(src_path, destination_path)
+    os.system("mv {0} {1}".format(src_path, destination_path))
 
 
 def get_image_timestamp(path):
