@@ -132,8 +132,12 @@ def file_extension_is_image(file_extension):
 def move_file(src_path, destination_path):
     #shutil.move(input_path, quarantine_path)
     #os.rename(src_path, destination_path)
-    os.system("mv {0} {1}".format(src_path, destination_path))
-    os.system("touch {0}".format(destination_path))     # This is needed for Moments to detect the new file for some reason!
+    move_command = "mv {0} {1}".format(src_path, destination_path)
+    print("Move command: " + move_command)
+    os.system(move_command)
+    touch_command = "touch {0}".format(destination_path)
+    print("Touch command: " + touch_command)
+    os.system(touch_command)     # This is needed for Moments to detect the new file for some reason!
 
 
 def get_image_timestamp(path):
