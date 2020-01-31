@@ -133,6 +133,7 @@ def move_file(src_path, destination_path):
     #shutil.move(input_path, quarantine_path)
     #os.rename(src_path, destination_path)
     os.system("mv {0} {1}".format(src_path, destination_path))
+    os.system("touch {0}".format(destination_path))     # This is needed for Moments to detect the new file for some reason!
 
 
 def get_image_timestamp(path):
