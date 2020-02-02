@@ -14,6 +14,7 @@ from hashutils import HashUtils
 DIRECTORY_INPUT = os.getenv('PHOTOSORT_DIRECTORY_INPUT', '/photos/input')
 DIRECTORY_OUTPUT = os.getenv('PHOTOSORT_DIRECTORY_OUTPUT', '/photos/output')
 DIRECTORY_QUARANTINE = os.getenv('PHOTOSORT_DIRECTORY_QUARANTINE', '/photos/quarantine')
+MONITOR_CHANGES = os.getenv('PHOTOSORT_MONITOR_CHANGES', "False")
 
 supported_image_file_extensions = ['.jpg', '.jpeg']
 exif_tag_date_taken = 'EXIF DateTimeOriginal'
@@ -34,7 +35,7 @@ class Watcher:
                 time.sleep(5)
         except:
             self.observer.stop()
-            print("Exiting...")
+            print("Stopping watching...")
 
         self.observer.join()
 
@@ -44,8 +45,7 @@ class Handler(FileSystemEventHandler):
     @staticmethod
     def on_any_event(event):
         if debug():
-            pass
-            #print('Received event in input directory: ' + event.event_type)
+            print('Received event in input directory: ' + event.event_type)
         if event.is_directory:
             return None
 
@@ -53,6 +53,7 @@ class Handler(FileSystemEventHandler):
         #    process_file(event.src_path)
 
         elif event.event_type == 'modified':
+            time.sleep(1)   # This can help avoid processing files that are not yet fully written to disk.
             process_file(event.src_path)
 
 
@@ -60,7 +61,7 @@ def debug():
     return False
 
 
-def prcoess_existing_files():
+def process_existing_files():
     print('Scanning for existing files in ' + DIRECTORY_INPUT)
     for file in os.listdir(DIRECTORY_INPUT):
         process_file(DIRECTORY_INPUT + '/' + file)
@@ -175,6 +176,8 @@ def create_output_dir(year, month):
 
 if __name__ == '__main__':
     # First, process any files in the input directory. This takes care of any files that may have been added whilst photowatch was not running
-    prcoess_existing_files()
-    w = Watcher()
-    w.run()
+    process_existing_files()
+    # Only monitor changes in the input directory if specified.
+    if MONITOR_CHANGES == "True":
+        w = Watcher()
+        w.run()
