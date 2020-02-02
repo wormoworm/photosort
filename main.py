@@ -11,9 +11,9 @@ import hashlib
 
 from hashutils import HashUtils
 
-DIRECTORY_INPUT = os.getenv('DIRECTORY_INPUT', '/photos/input')
-DIRECTORY_OUTPUT = os.getenv('DIRECTORY_OUTPUT', '/photos/output')
-DIRECTORY_QUARANTINE = os.getenv('DIRECTORY_QUARANTINE', '/photos/quarantine')
+DIRECTORY_INPUT = os.getenv('PHOTOSORT_DIRECTORY_INPUT', '/photos/input')
+DIRECTORY_OUTPUT = os.getenv('PHOTOSORT_DIRECTORY_OUTPUT', '/photos/output')
+DIRECTORY_QUARANTINE = os.getenv('PHOTOSORT_DIRECTORY_QUARANTINE', '/photos/quarantine')
 
 supported_image_file_extensions = ['.jpg', '.jpeg']
 exif_tag_date_taken = 'EXIF DateTimeOriginal'
@@ -44,15 +44,16 @@ class Handler(FileSystemEventHandler):
     @staticmethod
     def on_any_event(event):
         if debug():
-            print('Received event in input directory: ' + event.event_type)
+            pass
+            #print('Received event in input directory: ' + event.event_type)
         if event.is_directory:
             return None
 
-        elif event.event_type == 'created':
-            process_file(event.src_path)
+        #elif event.event_type == 'created':
+        #    process_file(event.src_path)
 
-        # elif event.event_type == 'modified':
-            # process_file(event.src_path)
+        elif event.event_type == 'modified':
+            process_file(event.src_path)
 
 
 def debug():
@@ -86,6 +87,10 @@ def process_file(input_path):
         return None
     # Step 3: Extract EXIF date taken from the image
     year, month = get_image_timestamp(input_path)
+    if year == -1:
+        if debug():
+            print("Exif time could not be read, skipping event...")
+        return None
     # Step 4: Move the file to the correct destination directory (skipping if it already exists)
     image_output_dir = create_output_dir(year, month)
     image_output_path = image_output_dir + file_name_full
@@ -132,15 +137,16 @@ def file_extension_is_image(file_extension):
 def move_file(src_path, destination_path):
     #shutil.move(input_path, quarantine_path)
     #os.rename(src_path, destination_path)
-    move_command = "sudo mv {0} {1}".format(src_path, destination_path)
-    print("Move command: " + move_command)
+    move_command = "mv {0} {1}".format(src_path, destination_path)
+    if debug():
+        print("Move command: " + move_command)
     os.system(move_command)
     #remove_command = "rm {0}".format(src_path)
     #print("Remove command: " + remove_command)
     #os.system(remove_command)
-    touch_command = "sudo touch {0}".format(destination_path)
-    print("Touch command: " + touch_command)
-    os.system(touch_command)     # This is needed for Moments to detect the new file for some reason!
+    #touch_command = "touch {0}".format(destination_path)
+    #print("Touch command: " + touch_command)
+    #os.system(touch_command)     # This is needed for Moments to detect the new file for some reason!
 
 
 def get_image_timestamp(path):
@@ -149,6 +155,8 @@ def get_image_timestamp(path):
     # pp = pprint.PrettyPrinter(indent=4)
     # pp.pprint(tags)
     exif_datetime = tags.get(exif_tag_date_taken)
+    if exif_datetime == None:
+        return -1, -1
     image_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
     # print(image_date.year)
     if debug():
