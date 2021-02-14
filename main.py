@@ -110,7 +110,7 @@ def process_file(input_path):
             # The two files are not identical, so we will move the input file to a 'quarantine' directory, where the user can resolve the conflict manually
             quarantine_path = DIRECTORY_QUARANTINE + '/' + file_name_full
             ensure_directory_exists(DIRECTORY_QUARANTINE)
-            move_file(input, quarantine_path)
+            move_file(input_path, quarantine_path)
             print('An image named ' + file_name_full + ' already exists, but its contents are not identical. The image has been moved to ' + quarantine_path + ' for quarantine')
         return None
     # Ensure the output directory exists before attempting to move the file
