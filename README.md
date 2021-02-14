@@ -44,9 +44,10 @@ services:
     container_name: photosort
     restart: unless-stopped
     environment:
-      - DIRECTORY_INPUT=/path/to/input/directory           # Optional, defaults to /photos/input
-      - DIRECTORY_OUTPUT=/path/to/output/directory         # Optional, defaults to /photos/output
-      - DIRECTORY_QUARANTINE=/path/to/quarantine/directory # Optional, defaults to /photos/quarantine
+      - PHOTOSORT_DIRECTORY_INPUT=/path/to/input/directory           # Optional, defaults to /photos/input
+      - PHOTOSORT_DIRECTORY_OUTPUT=/path/to/output/directory         # Optional, defaults to /photos/output
+      - PHOTOSORT_DIRECTORY_QUARANTINE=/path/to/quarantine/directory # Optional, defaults to /photos/quarantine
+      - PHOTOSORT_MONITOR_CHANGES=false                    # Whether or not to monitor for changes in the input directory. Optional, defaults to false.
     volumes:
       - /input/path/on/host:/photos/input
       - /output/path/on/host:/photos/output
