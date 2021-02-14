@@ -14,7 +14,7 @@ from hashutils import HashUtils
 DIRECTORY_INPUT = os.getenv('PHOTOSORT_DIRECTORY_INPUT', '/photos/input')
 DIRECTORY_OUTPUT = os.getenv('PHOTOSORT_DIRECTORY_OUTPUT', '/photos/output')
 DIRECTORY_QUARANTINE = os.getenv('PHOTOSORT_DIRECTORY_QUARANTINE', '/photos/quarantine')
-MONITOR_CHANGES = os.getenv('PHOTOSORT_MONITOR_CHANGES', "False")
+MONITOR_CHANGES = os.getenv('PHOTOSORT_MONITOR_CHANGES', 'False').lower() in ['true', '1']
 
 supported_image_file_extensions = ['.jpg', '.jpeg']
 exif_tag_date_taken = 'EXIF DateTimeOriginal'
@@ -178,6 +178,6 @@ if __name__ == '__main__':
     # First, process any files in the input directory. This takes care of any files that may have been added whilst photowatch was not running
     process_existing_files()
     # Only monitor changes in the input directory if specified.
-    if MONITOR_CHANGES == "True":
+    if MONITOR_CHANGES:
         w = Watcher()
         w.run()
