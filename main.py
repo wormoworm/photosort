@@ -122,38 +122,42 @@ def process_file(input_path):
     # Ensure the output directory exists before attempting to move the file
     ensure_directory_exists(image_output_dir)
     # Move the file
-    move_file(input_path, image_output_path)
-    print('Image ' + file_name_full + ' moved to: ' + image_output_path)
+    if move_file(input_path, image_output_path):
+        print('Image ' + file_name_full + ' moved to: ' + image_output_path)
 
 
 def does_file_exist(path):
     return os.path.isfile(path)
 
 
-def ensure_directory_exists(path):
+def ensure_directory_exists(path) -> bool:
     if not dry_run():
         Path(path).mkdir(parents=True, exist_ok=True)
+        return True
     else:
         if debug():
             print("Skipped creation of {0} due to dry run being set.".format(path))
+        return False
 
 
 # Checks if a file is an image or not
-def file_extension_is_image(file_extension):
+def file_extension_is_image(file_extension) -> bool:
     if debug():
         print('Checking file extension: ' + file_extension)
     return file_extension.lower() in supported_image_file_extensions
 
 
-def move_file(src_path, destination_path):
+def move_file(src_path, destination_path) -> bool:
     if not dry_run():
         move_command = "mv {0} {1}".format(src_path, destination_path)
         if debug():
             print("Move command: " + move_command)
         os.system(move_command)
+        return True
     else:
         if debug():
             print("Skipped moving {0} to {1} due to dry run being set.".format(src_path, destination_path))
+        return False
 
 
 def get_image_timestamp(path):
