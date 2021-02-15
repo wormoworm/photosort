@@ -131,7 +131,11 @@ def does_file_exist(path):
 
 
 def ensure_directory_exists(path):
-    Path(path).mkdir(parents=True, exist_ok=True)
+    if not dry_run():
+        Path(path).mkdir(parents=True, exist_ok=True)
+    else:
+        if debug():
+            print("Skipped creation of {0} due to dry run being set.".format(path))
 
 
 # Checks if a file is an image or not
@@ -142,18 +146,14 @@ def file_extension_is_image(file_extension):
 
 
 def move_file(src_path, destination_path):
-    #shutil.move(input_path, quarantine_path)
-    #os.rename(src_path, destination_path)
-    move_command = "mv {0} {1}".format(src_path, destination_path)
-    if debug():
-        print("Move command: " + move_command)
-    os.system(move_command)
-    #remove_command = "rm {0}".format(src_path)
-    #print("Remove command: " + remove_command)
-    #os.system(remove_command)
-    #touch_command = "touch {0}".format(destination_path)
-    #print("Touch command: " + touch_command)
-    #os.system(touch_command)     # This is needed for Moments to detect the new file for some reason!
+    if not dry_run():
+        move_command = "mv {0} {1}".format(src_path, destination_path)
+        if debug():
+            print("Move command: " + move_command)
+        os.system(move_command)
+    else:
+        if debug():
+            print("Skipped moving {0} to {1} due to dry run being set.".format(src_path, destination_path))
 
 
 def get_image_timestamp(path):
