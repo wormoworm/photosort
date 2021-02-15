@@ -1,0 +1,14 @@
+version: "2.2"
+
+services:
+  photosort:
+    image: tomhomewood/photosort:latest
+    container_name: photosort
+    restart: unless-stopped
+    network_mode: none
+    environment:
+      - PHOTOSORT_MONITOR_CHANGES=true
+    volumes:
+      - /input/path/on/host:/photos/input
+      - /output/path/on/host:/photos/output
+      - /quarantine/path/on/host:/photos/quarantine
