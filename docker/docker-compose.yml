@@ -8,7 +8,9 @@ services:
     network_mode: none
     environment:
       - PHOTOSORT_MONITOR_CHANGES=true
+      - PHOTOSORT_DEBUG=true
+      - PHOTOSORT_DRY_RUN=true
     volumes:
-      - /input/path/on/host:/photos/input
-      - /output/path/on/host:/photos/output
-      - /quarantine/path/on/host:/photos/quarantine
+      - /home/tom/photos/input:/photos/input
+      - /home/tom/photos/output:/photos/output
+      - /home/tom/photos/quarantine:/photos/quarantine
