@@ -15,6 +15,8 @@ DIRECTORY_INPUT = os.getenv('PHOTOSORT_DIRECTORY_INPUT', '/photos/input')
 DIRECTORY_OUTPUT = os.getenv('PHOTOSORT_DIRECTORY_OUTPUT', '/photos/output')
 DIRECTORY_QUARANTINE = os.getenv('PHOTOSORT_DIRECTORY_QUARANTINE', '/photos/quarantine')
 MONITOR_CHANGES = os.getenv('PHOTOSORT_MONITOR_CHANGES', 'False').lower() in ['true', '1']
+DRY_RUN = os.getenv('PHOTOSORT_DRY_RUN', 'False').lower() in ['true', '1']
+DEBUG = os.getenv('PHOTOSORT_DEBUG', 'False').lower() in ['true', '1']
 
 supported_image_file_extensions = ['.jpg', '.jpeg']
 exif_tag_date_taken = 'EXIF DateTimeOriginal'
@@ -58,7 +60,11 @@ class Handler(FileSystemEventHandler):
 
 
 def debug():
-    return False
+    return DEBUG
+
+
+def dry_run():
+    return DRY_RUN
 
 
 def process_existing_files():
