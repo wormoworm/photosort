@@ -87,13 +87,13 @@ def process_file(input_path):
     if debug():
         print('File: ' + file_name_full)
     # Step 2: Filter away files that are not images
-    file_is_image =  file_extension_is_supported(file_extension)
-    if not file_is_image:
+    file_is_supported =  file_extension_is_supported(file_extension)
+    if not file_is_supported:
         if debug():
-            print('File is not an image, skipping...')
+            print('File is not supported, skipping...')
         return None
     # Step 3: Extract EXIF date taken from the image
-    year, month = get_image_timestamp(input_path)
+    year, month = get_file_timestamp(input_path)
     if year == -1:
         if debug():
             print("Exif time could not be read, skipping event...")
@@ -160,7 +160,7 @@ def move_file(src_path, destination_path) -> bool:
         return False
 
 
-def get_image_timestamp(path):
+def get_file_timestamp(path):
     file = open(path, 'rb')
     tags = exifread.process_file(file, details=False, stop_tag=exif_tag_date_taken)
     # pp = pprint.PrettyPrinter(indent=4)
@@ -168,12 +168,12 @@ def get_image_timestamp(path):
     exif_datetime = tags.get(exif_tag_date_taken)
     if exif_datetime == None:
         return -1, -1
-    image_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
-    # print(image_date.year)
+    file_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
+    # print(file_date.year)
     if debug():
         print('Image capture time: %s' % exif_datetime)
     # Return the year and month as a tuple. Values are not zero-padded at this stage
-    return image_date.year, image_date.month
+    return file_date.year, file_date.month
 
 
 def pretty_print_exif(tags):
