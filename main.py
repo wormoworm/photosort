@@ -18,7 +18,7 @@ MONITOR_CHANGES = os.getenv('PHOTOSORT_MONITOR_CHANGES', 'False').lower() in ['t
 DRY_RUN = os.getenv('PHOTOSORT_DRY_RUN', 'False').lower() in ['true', '1']
 DEBUG = os.getenv('PHOTOSORT_DEBUG', 'False').lower() in ['true', '1']
 
-supported_image_file_extensions = ['.jpg', '.jpeg']
+supported_image_file_extensions = ['.jpg', '.jpeg', '.mov']
 exif_tag_date_taken = 'EXIF DateTimeOriginal'
 exif_datetime_format = '%Y:%m:%d %H:%M:%S'
 dir_output_base = DIRECTORY_OUTPUT + '/{0}/{1:02}/'
@@ -87,7 +87,7 @@ def process_file(input_path):
     if debug():
         print('File: ' + file_name_full)
     # Step 2: Filter away files that are not images
-    file_is_image =  file_extension_is_image(file_extension)
+    file_is_image =  file_extension_is_supported(file_extension)
     if not file_is_image:
         if debug():
             print('File is not an image, skipping...')
@@ -141,7 +141,7 @@ def ensure_directory_exists(path) -> bool:
 
 
 # Checks if a file is an image or not
-def file_extension_is_image(file_extension) -> bool:
+def file_extension_is_supported(file_extension) -> bool:
     if debug():
         print('Checking file extension: ' + file_extension)
     return file_extension.lower() in supported_image_file_extensions
