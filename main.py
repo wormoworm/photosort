@@ -9,6 +9,7 @@ import shutil
 from pathlib import Path
 import hashlib
 from abc import ABC, abstractmethod
+from subprocess import Popen, PIPE, run
 
 from hashutils import HashUtils
 
@@ -81,6 +82,32 @@ class ExifreadDateReader(FileDateReader):
         # print(file_date.year)
         if debug():
             print('Image capture time: %s' % exif_datetime)
+        # Return the date
+        return file_date
+
+class ExiftoolDateReader(FileDateReader):
+
+    def get_file_date(self, path: str):
+        exiftool_process = Popen("exiftool -s -s -s -DateTimeOriginal {0}".format(path), shell=True, stdout=PIPE, stderr=PIPE)
+        exiftool_process_out, exiftool_process_err = exiftool_process.communicate()
+        exiftool_process_out_string = exiftool_process_out.decode("utf-8")
+        exiftool_process_err_string = exiftool_process_err.decode("utf-8")
+        return_code = exiftool_process.returncode
+        if debug():
+            print('Raw (but stripped) ExifTool output: {0}'.format(exiftool_process_out_string.strip()))
+
+        if return_code != 0:
+            if debug():
+                print('Could not read file date')
+                return -1
+
+        exif_datetime = exiftool_process_out_string.strip()
+        if debug():
+            print('Exif datetime: {0}'.format(exif_datetime))
+        file_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
+        # print(file_date.year)
+        if debug():
+            print('File date: %s' % exif_datetime)
         # Return the date
         return file_date
 
@@ -173,7 +200,7 @@ def file_extension_is_supported(file_extension) -> bool:
     return file_extension.lower() in supported_image_file_extensions
 
 def get_date_reader_for_file(path: str) -> FileDateReader:
-    return ExifreadDateReader()
+    return ExiftoolDateReader()
 
 def move_file(src_path, destination_path) -> bool:
     if not dry_run():
