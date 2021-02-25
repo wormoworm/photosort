@@ -1,6 +1,6 @@
 import os
 import time
-from datetime import datetime
+from datetime import datetime, date
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import exifread
@@ -8,6 +8,7 @@ import pprint
 import shutil
 from pathlib import Path
 import hashlib
+from abc import ABC, abstractmethod
 
 from hashutils import HashUtils
 
@@ -58,6 +59,31 @@ class Handler(FileSystemEventHandler):
             time.sleep(1)   # This can help avoid processing files that are not yet fully written to disk.
             process_file(event.src_path)
 
+class FileDateReader(ABC):
+
+    @abstractmethod
+    def get_file_date(self, file: str) -> date:
+        """
+        Return a date object representing when the file was created.
+        """
+
+class ExifreadDateReader(FileDateReader):
+
+    def get_file_date(self, path: str):
+        file = open(path, 'rb')
+        tags = exifread.process_file(file, details=False, stop_tag=exif_tag_date_taken)
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(tags)
+        exif_datetime = tags.get(exif_tag_date_taken)
+        if exif_datetime == None:
+            return -1
+        file_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
+        # print(file_date.year)
+        if debug():
+            print('Image capture time: %s' % exif_datetime)
+        # Return the date
+        return file_date
+
 
 def debug():
     return DEBUG
@@ -93,16 +119,16 @@ def process_file(input_path):
             print('File is not supported, skipping...')
         return None
     # Step 3: Extract EXIF date taken from the image
-    year, month = get_file_timestamp(input_path)
-    if year == -1:
+    file_date = get_file_date(input_path)
+    if file_date == -1:
         if debug():
-            print("Exif time could not be read, skipping event...")
+            print("File date could not be read, skipping event...")
         return None
     # Step 4: Move the file to the correct destination directory (skipping if it already exists)
-    image_output_dir = create_output_dir(year, month)
+    image_output_dir = create_output_dir(file_date.year, file_date.month)
     image_output_path = image_output_dir + file_name_full
     if debug():
-        print('Output path for this image will be: ' + image_output_path)
+        print('Output path for this file will be: ' + image_output_path)
     file_exists = does_file_exist(image_output_path)
     if file_exists:
         # Now we will do an extra check to see if we are really dealing with the same file, or whether it's just a file name clash
@@ -140,12 +166,14 @@ def ensure_directory_exists(path) -> bool:
         return False
 
 
-# Checks if a file is an image or not
+# Checks if a file is supported or not
 def file_extension_is_supported(file_extension) -> bool:
     if debug():
         print('Checking file extension: ' + file_extension)
     return file_extension.lower() in supported_image_file_extensions
 
+def get_date_reader_for_file(path: str) -> FileDateReader:
+    return ExifreadDateReader()
 
 def move_file(src_path, destination_path) -> bool:
     if not dry_run():
@@ -160,20 +188,9 @@ def move_file(src_path, destination_path) -> bool:
         return False
 
 
-def get_file_timestamp(path):
-    file = open(path, 'rb')
-    tags = exifread.process_file(file, details=False, stop_tag=exif_tag_date_taken)
-    # pp = pprint.PrettyPrinter(indent=4)
-    # pp.pprint(tags)
-    exif_datetime = tags.get(exif_tag_date_taken)
-    if exif_datetime == None:
-        return -1, -1
-    file_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
-    # print(file_date.year)
-    if debug():
-        print('Image capture time: %s' % exif_datetime)
-    # Return the year and month as a tuple. Values are not zero-padded at this stage
-    return file_date.year, file_date.month
+def get_file_date(path):    
+    file_date = get_date_reader_for_file(path).get_file_date(path)
+    return file_date
 
 
 def pretty_print_exif(tags):

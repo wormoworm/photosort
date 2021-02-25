@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     network_mode: none
     environment:
-      - PHOTOSORT_MONITOR_CHANGES=true
+      - PHOTOSORT_MONITOR_CHANGES=false
       - PHOTOSORT_DEBUG=true
       - PHOTOSORT_DRY_RUN=true
     volumes:

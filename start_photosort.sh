@@ -1,4 +1,6 @@
-export PHOTOSORT_DIRECTORY_INPUT=/volume1/homes/tom/photos/input
-export PHOTOSORT_DIRECTORY_OUTPUT=/volume1/homes/tom/Drive/Moments/Main
-export PHOTOSORT_DIRECTORY_QUARANTINE=/volume1/homes/tom/photos/quarantine
-python3 -u /volume1/homes/admin/python/photosort/main.py
+export PHOTOSORT_DIRECTORY_INPUT=/home/tom/photos/input
+export PHOTOSORT_DIRECTORY_OUTPUT=/home/tom/photos/output
+export PHOTOSORT_DIRECTORY_QUARANTINE=/home/tom/photos/quarantine
+export PHOTOSORT_DEBUG=true
+export PHOTOSORT_DRY_RUN=true
+python3 -u main.py
