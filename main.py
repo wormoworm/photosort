@@ -20,7 +20,7 @@ MONITOR_CHANGES = os.getenv('PHOTOSORT_MONITOR_CHANGES', 'False').lower() in ['t
 DRY_RUN = os.getenv('PHOTOSORT_DRY_RUN', 'False').lower() in ['true', '1']
 DEBUG = os.getenv('PHOTOSORT_DEBUG', 'False').lower() in ['true', '1']
 
-supported_image_file_extensions = ['.jpg', '.jpeg', '.mov']
+supported_image_file_extensions = ['.jpg', '.jpeg', '.mov', '.mp4']
 exif_tag_date_taken = 'EXIF DateTimeOriginal'
 exif_datetime_format = '%Y:%m:%d %H:%M:%S'
 dir_output_base = DIRECTORY_OUTPUT + '/{0}/{1:02}/'
