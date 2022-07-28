@@ -78,12 +78,16 @@ class ExifreadDateReader(FileDateReader):
         exif_datetime = tags.get(exif_tag_date_taken)
         if exif_datetime == None:
             return -1
-        file_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
-        # print(file_date.year)
-        if debug():
-            print('Image capture time: %s' % exif_datetime)
-        # Return the date
-        return file_date
+        try:
+            file_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
+            # print(file_date.year)
+            if debug():
+                print('Image capture time: %s' % exif_datetime)
+            # Return the date
+            return file_date
+        except ValueError as e:
+             print('Error parsing file date: %s' % e)
+             return -1
 
 class ExiftoolDateReader(FileDateReader):
 
@@ -104,12 +108,15 @@ class ExiftoolDateReader(FileDateReader):
         exif_datetime = exiftool_process_out_string.strip()
         if debug():
             print('Exif datetime: {0}'.format(exif_datetime))
-        file_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
-        # print(file_date.year)
-        if debug():
-            print('File date: %s' % exif_datetime)
-        # Return the date
-        return file_date
+        try:
+            file_date = datetime.strptime('%s' % exif_datetime, exif_datetime_format)
+            if debug():
+                print('File date: %s' % exif_datetime)
+            # Return the date
+            return file_date
+        except ValueError as e:
+             print('Error parsing file date: %s' % e)
+             return -1
 
 
 def debug():
